@@ -256,7 +256,8 @@ async def process_joke_genre_result(callback: CallbackQuery,
                                     state: FSMContext):
     # возвращаем ответ о поиске шутки
     # заодно обходим ошибку о неизменяемом сообщении
-    await callback.message.edit_text(text=LEXICON['searching_for_joke'])
+    await callback.message.edit_text(text=LEXICON['searching_for_joke'],
+                                     reply_markup=jokes_kb)
     time.sleep(1)
     # вытаскиваем шутку
     joke = genre_joke(callback.data)
@@ -276,7 +277,8 @@ async def process_joke_insult_result(callback: CallbackQuery,
                                      state: FSMContext):
     # возвращаем ответ о поиске шутки
     # заодно обходим ошибку о неизменяемом сообщении
-    await callback.message.edit_text(text=LEXICON['searching_for_joke'])
+    await callback.message.edit_text(text=LEXICON['searching_for_joke'],
+                                     reply_markup=jokes_kb)
     time.sleep(1)
     # вытаскиваем шутку
     joke = insult_joke()
@@ -295,7 +297,8 @@ async def process_joke_chuk_norris_result(callback: CallbackQuery,
                                           state: FSMContext):
     # возвращаем ответ о поиске шутки
     # заодно обходим ошибку о неизменяемом сообщении
-    await callback.message.edit_text(text=LEXICON['searching_for_joke'])
+    await callback.message.edit_text(text=LEXICON['searching_for_joke'],
+                                     reply_markup=jokes_kb)
     time.sleep(1)
     # вытаскиваем шутку
     joke = chuk_norris_joke()
@@ -314,7 +317,8 @@ async def process_joke_random_result(callback: CallbackQuery,
                                      state: FSMContext):
     # возвращаем ответ о поиске шутки
     # заодно обходим ошибку о неизменяемом сообщении
-    await callback.message.edit_text(text=LEXICON['searching_for_joke'])
+    await callback.message.edit_text(text=LEXICON['searching_for_joke'],
+                                     reply_markup=jokes_kb)
     time.sleep(1)
     # вытаскиваем шутку
     joke = random_joke()
@@ -332,9 +336,13 @@ async def process_joke_random_result(callback: CallbackQuery,
                        Text(text='translate'))
 async def process_joke_translate_result(callback: CallbackQuery,
                                         state: FSMContext):
-    # вытаскиваем шутку
+    # для красоты добавляем сообщение о начале перевода
+    await callback.message.edit_text(text=LEXICON['translating_process'],
+                                     reply_markup=jokes_kb)
+    time.sleep(1)
+    # переводим шутку
     joke_translated = translate_ru(callback.message.text)
-    # отправляем шутку в чат
+    # отправляем переведенную шутку в чат
     await callback.message.edit_text(text=joke_translated,
                                      reply_markup=jokes_kb)
     await state.set_state(FSMEnterteinmentType.jokes)
@@ -347,6 +355,11 @@ async def process_joke_translate_result(callback: CallbackQuery,
                        Text(text='translate'))
 async def process_nothing_translate_result(callback: CallbackQuery,
                                            state: FSMContext):
+    # отправляем промежуточное сообщение,
+    # чтобы обойти ошибку неизенившегося сообщения
+    await callback.message.edit_text(text=LEXICON['translating_process'],
+                                     reply_markup=jokes_kb)
+    time.sleep(1)
     # отправляем в чат предупреждение об отсутствии шутки
     await callback.message.edit_text(text=LEXICON['nothing_translate'],
                                      reply_markup=jokes_kb)
