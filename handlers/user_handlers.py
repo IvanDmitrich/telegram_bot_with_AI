@@ -4,7 +4,6 @@ from aiogram.filters import Command, CommandStart, StateFilter, Text, or_f
 from aiogram.types import CallbackQuery, Message
 from aiogram.filters.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import default_state
 
 # from filters.filters import
 from keyboards.entertainment_kb import entertainment_kb
@@ -15,10 +14,8 @@ from services.rsp_game import (rsp_process,
                                rsp_statistic,
                                rps_statistic_who_better)
 from services.jokes_requests import (genre_joke,
-                                     insult_joke,
                                      chuk_norris_joke,
                                      random_joke)
-from services.yandex_translator import translate_ru
 from database.database import user_data_drop
 import time
 from config_data.config import Config, load_config
@@ -63,7 +60,7 @@ async def process_start_command(message: Message, state: FSMContext, bot: Bot):
     await state.set_state(FSMEnterteinmentType.main_menu)
 
 
-# ------ ХЭНДЛЕРЫ В ГЛАВНОМ МЕНЮ (НАЧАЛО) ------
+# ------ ХЭНДЛЕРЫ В ГЛАВНОМ МЕНЮ ------
 # у всех состояние нахождения в главном меню
 
 # Этот хэндлер будет срабатывать на кнопку [Игра камень-ножницы-бумага]
@@ -140,9 +137,8 @@ async def process_main_menu_command_unknown(message: Message, bot: Bot):
     await message.answer(text=LEXICON['unknown'],
                          reply_markup=entertainment_kb)
 
-# ------ ХЭНДЛЕРЫ В ГЛАВНОМ МЕНЮ (КОНЕЦ) ------
 
-# ------ ХЭНДЛЕРЫ В МЕНЮ ИГРЫ КАМЕНЬ-НОЖНИЦЫ-БУМАГА (НАЧАЛО) ------
+# ------ ХЭНДЛЕРЫ В МЕНЮ ИГРЫ КАМЕНЬ-НОЖНИЦЫ-БУМАГА ------
 # у всех состояние нахождения в меню игры
 
 # Этот хэндлер будет срабатывать на кнопки [камень, ножницы, бумага]
@@ -155,7 +151,8 @@ async def process_main_menu_command_unknown(message: Message, bot: Bot):
 async def process_rsp_game_result(callback: CallbackQuery, state: FSMContext):
     # возвращаем ответ о подготовке результатов
     # заодно обходим ошибку о неизменяемом сообщении
-    await callback.message.edit_text(text=LEXICON['rsp_protocols'])
+    await callback.message.edit_text(text=LEXICON['rsp_protocols'],
+                                     reply_markup=game_rsp_kb)
     # Рассчитываем результаты игры
     # также функция записывает результаты в бд
     bot_choice, vinner = rsp_process(
@@ -240,18 +237,16 @@ async def process_rsp_command_unknown(message: Message, bot: Bot):
     await message.answer(text=LEXICON['unknown'],
                          reply_markup=game_rsp_kb)
 
-# ------ ХЭНДЛЕРЫ В МЕНЮ ИГРЫ КАМЕНЬ-НОЖНИЦЫ-БУМАГА (КОНЕЦ) ------
 
-# ------ ХЭНДЛЕРЫ В МЕНЮ ШУТОК (НАЧАЛО) ------
+# ------ ХЭНДЛЕРЫ В МЕНЮ ШУТОК ------
 
-# Этот хэндлер будет срабатывать на кнопки [Программирование, Каламбур, Черный юмор, Жуткий юмор]
+# Этот хэндлер будет срабатывать на кнопки [Программирование, Каламбур, Черный юмор]
 # и присылать текст шутки
 @router.callback_query(or_f(StateFilter(FSMEnterteinmentType.jokes),
                             StateFilter(FSMEnterteinmentType.joke_received)),
                        or_f(Text(text='Programming'),
                             Text(text='Dark'),
-                            Text(text='Pun'),
-                            Text(text='Spooky')))
+                            Text(text='Pun')))
 async def process_joke_genre_result(callback: CallbackQuery,
                                     state: FSMContext):
     # возвращаем ответ о поиске шутки
@@ -261,27 +256,6 @@ async def process_joke_genre_result(callback: CallbackQuery,
     time.sleep(1)
     # вытаскиваем шутку
     joke = genre_joke(callback.data)
-    # отправляем шутку в чат
-    await callback.message.edit_text(text=joke, reply_markup=jokes_kb)
-    # Устанавливаем состояние нахождения в меню шуток c полученной шуткой
-    await state.set_state(FSMEnterteinmentType.joke_received)
-
-
-
-# Этот хэндлер будет срабатывать на кнопки [Оскорбления]
-# и присылать текст шутки
-@router.callback_query(or_f(StateFilter(FSMEnterteinmentType.jokes),
-                            StateFilter(FSMEnterteinmentType.joke_received)),
-                       Text(text='insult'))
-async def process_joke_insult_result(callback: CallbackQuery,
-                                     state: FSMContext):
-    # возвращаем ответ о поиске шутки
-    # заодно обходим ошибку о неизменяемом сообщении
-    await callback.message.edit_text(text=LEXICON['searching_for_joke'],
-                                     reply_markup=jokes_kb)
-    time.sleep(1)
-    # вытаскиваем шутку
-    joke = insult_joke()
     # отправляем шутку в чат
     await callback.message.edit_text(text=joke, reply_markup=jokes_kb)
     # Устанавливаем состояние нахождения в меню шуток c полученной шуткой
@@ -343,13 +317,6 @@ async def process_joke_translate_result(callback: CallbackQuery,
     # отправляем сообщение, что функция перевода временно отсутствует
     await callback.message.edit_text(text=LEXICON['translation_unavailable'],
                                      reply_markup=jokes_kb)
-    # функция перевода временно отключена, надо решить
-    # проблему ограничения времени жизни токена 12 часов
-    # # переводим шутку
-    # joke_translated = translate_ru(callback.message.text)
-    # # отправляем переведенную шутку в чат
-    # await callback.message.edit_text(text=joke_translated,
-    #                                  reply_markup=jokes_kb)
     await state.set_state(FSMEnterteinmentType.jokes)
 
 
@@ -404,11 +371,8 @@ async def process_jokes_command_unknown(message: Message,
                          reply_markup=jokes_kb)
     await state.set_state(FSMEnterteinmentType.jokes)
 
-# ------ ХЭНДЛЕРЫ В МЕНЮ ШУТОК (КОНЕЦ) ------
 
-
-
-# ------ ОСТАЛЬНЫЕ ХЭНДЛЕРЫ (НАЧАЛО) ------
+# ------ ОСТАЛЬНЫЕ ХЭНДЛЕРЫ ------
 
 # Этот хэндлер будет срабатывать на кнопку [назад]:
 # присылать клавиатуру главного меню
@@ -423,5 +387,3 @@ async def process_back_to_main_menu(callback: CallbackQuery,
                                      reply_markup=entertainment_kb)
     # Устанавливаем состояние нахождения в главном меню
     await state.set_state(FSMEnterteinmentType.main_menu)
-
-# ------ ОСТАЛЬНЫЕ ХЭНДЛЕРЫ (КОНЕЦ) ------
