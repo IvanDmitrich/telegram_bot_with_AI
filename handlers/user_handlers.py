@@ -340,11 +340,16 @@ async def process_joke_translate_result(callback: CallbackQuery,
     await callback.message.edit_text(text=LEXICON['translating_process'],
                                      reply_markup=jokes_kb)
     time.sleep(1)
-    # переводим шутку
-    joke_translated = translate_ru(callback.message.text)
-    # отправляем переведенную шутку в чат
-    await callback.message.edit_text(text=joke_translated,
+    # отправляем сообщение, что функция перевода временно отсутствует
+    await callback.message.edit_text(text=LEXICON['translation_unavailable'],
                                      reply_markup=jokes_kb)
+    # функция перевода временно отключена, надо решить
+    # проблему ограничения времени жизни токена 12 часов
+    # # переводим шутку
+    # joke_translated = translate_ru(callback.message.text)
+    # # отправляем переведенную шутку в чат
+    # await callback.message.edit_text(text=joke_translated,
+    #                                  reply_markup=jokes_kb)
     await state.set_state(FSMEnterteinmentType.jokes)
 
 

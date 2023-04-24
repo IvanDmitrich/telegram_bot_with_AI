@@ -75,6 +75,7 @@ LEXICON: dict[str, str] = {
     'translate': 'Перевести на русский',
     'translating_process': 'Выполняю перевод...',
     'nothing_translate': 'Отсутствует объект перевода, запросите шутку',
+    'translation_unavailable': 'Опция перевода временно недоступна',
 
     'unknown': 'Не могу идентифицировать команду'
 }
