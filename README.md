@@ -1,4 +1,5 @@
 # Телеграм-бот с искусственным интелектом
+## Статус проекта: MVP, возможны доработки
 тетрадь с предсказательной моделью: [ML_model/next_step_predict.ipynb](https://github.com/IvanDmitrich/telegram_bot_with_AI/blob/master/ML_model/next_step_predict.ipynb)
 <br>ссылка на телеграм-бота: [https://t.me/funnybunnydummy_bot](https://t.me/funnybunnydummy_bot)
 ## Описание проекта
