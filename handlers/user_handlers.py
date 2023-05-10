@@ -103,8 +103,11 @@ async def process_shotgun(callback: CallbackQuery,
     # удаляем ранее отправленный аудиофайл, если такой был
     if len(message_dict) > 0:
         message_id = message_dict['message_id']
-        await bot.delete_message(chat_id=callback.message.chat.id,
-                                 message_id=message_id)
+        try:
+            await bot.delete_message(chat_id=callback.message.chat.id,
+                                     message_id=message_id)
+        except:
+            pass
     audio = await bot.send_audio(
             chat_id=callback.message.chat.id,
             audio='CQACAgIAAxkBAAIDsGRFAQwBzgIY_NbgTYzIz38x_Pt9AAI_KQACj5MpSvMGc7VruUzXLwQ')
